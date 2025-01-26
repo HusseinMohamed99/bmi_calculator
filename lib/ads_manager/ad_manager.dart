@@ -7,6 +7,8 @@ class AdManager {
   static BannerAd? bannerAd;
   static AppOpenAd? appOpenAd;
   static InterstitialAd? interstitialAd;
+  static RewardedAd? rewardedAd;
+  static bool isShowingAd = false;
 
   static void loadAdBanner(void setState) {
     bannerAd = BannerAd(
@@ -73,6 +75,30 @@ class AdManager {
     );
   }
 
+  static void loadRewardedAd(void setState) {
+    RewardedAd.load(
+        adUnitId: AdUnit.rewardedAd,
+        request: const AdRequest(),
+        rewardedAdLoadCallback: RewardedAdLoadCallback(onAdLoaded: (ad) {
+          rewardedAd = ad;
+          if (rewardedAd != null) {
+            rewardedAd!.show(
+              onUserEarnedReward: (ad, reward) {
+                bannerAd?.dispose();
+                bannerAd = null;
+                interstitialAd?.dispose();
+                interstitialAd = null;
+                isShowingAd = true;
+                setState;
+              },
+            );
+          }
+        }, onAdFailedToLoad: (LoadAdError error) {
+          rewardedAd?.dispose();
+          log('Rewarded ad failed to load: $error');
+        }));
+  }
+
   static void disposeAdBanner() {
     bannerAd?.dispose();
     bannerAd = null;
@@ -81,5 +107,10 @@ class AdManager {
   static void disposeInterstitialAd() {
     interstitialAd?.dispose();
     interstitialAd = null;
+  }
+
+  static void disposeRewardedAd() {
+    rewardedAd?.dispose();
+    rewardedAd = null;
   }
 }

@@ -52,7 +52,9 @@ class _BmiScreenState extends State<BmiScreen> {
                 child: CustomAgeAndWeightWidget(bmiCubit: bmiCubit),
               ),
               CustomButtonCalculatorWidget(onPressed: () {
-                AdManager.loadInterstitialAd();
+                AdManager.isShowingAd
+                    ? AdManager.loadRewardedAd(setState(() {}))
+                    : null;
                 bmiCubit.calculateBMI();
                 Navigator.push(
                   context,
