@@ -42,6 +42,16 @@ class AdManager {
         },
       ),
     );
+    appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        loadAdOpen();
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        ad.dispose();
+        loadAdOpen();
+      },
+    );
   }
 
   static void loadInterstitialAd() {
