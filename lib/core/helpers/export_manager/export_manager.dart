@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:bmi_calculator/ads_manager/ad_manager.dart';
 import 'package:bmi_calculator/core/helpers/constant/constant.dart';
 import 'package:bmi_calculator/cubit/bmi_state.dart';
 import 'package:bmi_calculator/generated/assets.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:url_launcher/url_launcher.dart';

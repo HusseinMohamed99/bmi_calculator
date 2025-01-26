@@ -13,6 +13,7 @@ class _BmiScreenState extends State<BmiScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       checkForUpdate(context);
+      AdManager.loadAdBanner(setState(() {}));
     });
   }
 
@@ -44,6 +45,13 @@ class _BmiScreenState extends State<BmiScreen> {
                 child: CustomAgeAndWeightWidget(bmiCubit: bmiCubit),
               ),
               CustomButtonCalculatorWidget(bmiCubit: bmiCubit),
+              AdManager.bannerAd != null
+                  ? SizedBox(
+                      height: AdManager.bannerAd!.size.height.toDouble(),
+                      width: AdManager.bannerAd!.size.width.toDouble(),
+                      child: AdWidget(ad: AdManager.bannerAd!),
+                    )
+                  : SizedBox(),
             ],
           ),
         );
@@ -178,5 +186,11 @@ class _BmiScreenState extends State<BmiScreen> {
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       throw Exception('لا يمكن فتح الرابط $url');
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    AdManager.bannerAd?.dispose();
   }
 }
