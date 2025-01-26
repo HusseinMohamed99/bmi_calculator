@@ -14,14 +14,8 @@ class _BmiScreenState extends State<BmiScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       checkForUpdate(context);
     });
-    AdManager.loadAdBanner(() {
-      setState(() {
-        isAdLoaded = true;
-      });
-    });
+    AdManager.loadAdBanner(setState(() {}));
   }
-
-  bool isAdLoaded = false;
 
   @override
   void dispose() {
@@ -56,9 +50,29 @@ class _BmiScreenState extends State<BmiScreen> {
                 flex: 2,
                 child: CustomAgeAndWeightWidget(bmiCubit: bmiCubit),
               ),
-              CustomButtonCalculatorWidget(bmiCubit: bmiCubit),
+              CustomButtonCalculatorWidget(onPressed: () {
+                AdManager.loadInterstitialAd();
+                bmiCubit.calculateBMI();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BMIResultScreen(
+                      isMale: bmiCubit.isMale,
+                      age: bmiCubit.age,
+                      bmiValue: bmiCubit.result,
+                      bmiCategory:
+                          bmiCubit.getBmiCategory(bmiCubit.result)['category']
+                              as String,
+                      bmiCategoryColor: bmiCubit
+                          .getBmiCategory(bmiCubit.result)['color'] as Color,
+                      bmiInterpretation: bmiCubit.getBmiCategory(
+                          bmiCubit.result)['bmiInterpretation'] as String,
+                    ),
+                  ),
+                );
+              }),
               Visibility(
-                visible: isAdLoaded && AdManager.bannerAd != null,
+                visible: AdManager.bannerAd != null,
                 child: SizedBox(
                   height: AdManager.bannerAd!.size.height.toDouble(),
                   width: AdManager.bannerAd!.size.width.toDouble(),
