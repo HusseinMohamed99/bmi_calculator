@@ -22,11 +22,18 @@ class BMIResultScreen extends StatefulWidget {
 }
 
 class _BMIResultScreenState extends State<BMIResultScreen> {
-  bool isAdLoaded = false;
   @override
   void initState() {
     super.initState();
     AdManager.loadAdBanner(setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    AdManager.disposeAdBanner();
+    AdManager.disposeInterstitialAd();
+
+    super.dispose();
   }
 
   @override
@@ -165,11 +172,5 @@ class _BMIResultScreenState extends State<BMIResultScreen> {
         endWidth: 20,
       ),
     ];
-  }
-
-  @override
-  void dispose() {
-    AdManager.disposeAdBanner();
-    super.dispose();
   }
 }

@@ -20,6 +20,7 @@ class _BmiScreenState extends State<BmiScreen> {
   @override
   void dispose() {
     AdManager.disposeAdBanner();
+    AdManager.disposeInterstitialAd();
     super.dispose();
   }
 
