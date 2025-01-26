@@ -13,8 +13,20 @@ class _BmiScreenState extends State<BmiScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       checkForUpdate(context);
-      AdManager.loadAdBanner(setState(() {}));
     });
+    AdManager.loadAdBanner(() {
+      setState(() {
+        isAdLoaded = true;
+      });
+    });
+  }
+
+  bool isAdLoaded = false;
+
+  @override
+  void dispose() {
+    AdManager.disposeAdBanner();
+    super.dispose();
   }
 
   @override
@@ -45,13 +57,14 @@ class _BmiScreenState extends State<BmiScreen> {
                 child: CustomAgeAndWeightWidget(bmiCubit: bmiCubit),
               ),
               CustomButtonCalculatorWidget(bmiCubit: bmiCubit),
-              AdManager.bannerAd != null
-                  ? SizedBox(
-                      height: AdManager.bannerAd!.size.height.toDouble(),
-                      width: AdManager.bannerAd!.size.width.toDouble(),
-                      child: AdWidget(ad: AdManager.bannerAd!),
-                    )
-                  : SizedBox(),
+              Visibility(
+                visible: isAdLoaded && AdManager.bannerAd != null,
+                child: SizedBox(
+                  height: AdManager.bannerAd!.size.height.toDouble(),
+                  width: AdManager.bannerAd!.size.width.toDouble(),
+                  child: AdWidget(ad: AdManager.bannerAd!),
+                ),
+              ),
             ],
           ),
         );
@@ -186,11 +199,5 @@ class _BmiScreenState extends State<BmiScreen> {
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       throw Exception('لا يمكن فتح الرابط $url');
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    AdManager.bannerAd?.dispose();
   }
 }

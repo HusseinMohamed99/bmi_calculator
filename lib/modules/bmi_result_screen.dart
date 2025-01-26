@@ -22,6 +22,17 @@ class BMIResultScreen extends StatefulWidget {
 }
 
 class _BMIResultScreenState extends State<BMIResultScreen> {
+  bool isAdLoaded = false;
+  @override
+  void initState() {
+    super.initState();
+    AdManager.loadAdBanner((updateState) {
+      updateState(() {
+        isAdLoaded = true;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,69 +44,83 @@ class _BMIResultScreenState extends State<BMIResultScreen> {
         ),
       ),
       body: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Spacer(),
-              // Radial Gauge for BMI Value
-              SfRadialGauge(
-                axes: <RadialAxis>[
-                  RadialAxis(
-                    minimum: 10,
-                    maximum: 40,
-                    axisLabelStyle: GaugeTextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                    axisLineStyle: AxisLineStyle(
-                      thickness: 0.2,
-                      cornerStyle: CornerStyle.bothCurve,
-                      color: const Color(0x1E00A9B5),
-                      thicknessUnit: GaugeSizeUnit.factor,
-                    ),
-                    ranges: gaugeRange,
-                    pointers: gaugePointer,
-                    annotations: <GaugeAnnotation>[
-                      GaugeAnnotation(
-                        widget: Text(
-                          widget.bmiValue.toStringAsFixed(1),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                child: Column(
+                  children: [
+                    Spacer(),
+                    // Radial Gauge for BMI Value
+                    SfRadialGauge(
+                      axes: <RadialAxis>[
+                        RadialAxis(
+                          minimum: 10,
+                          maximum: 40,
+                          axisLabelStyle: GaugeTextStyle(
                             color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
+                          axisLineStyle: AxisLineStyle(
+                            thickness: 0.2,
+                            cornerStyle: CornerStyle.bothCurve,
+                            color: const Color(0x1E00A9B5),
+                            thicknessUnit: GaugeSizeUnit.factor,
+                          ),
+                          ranges: gaugeRange,
+                          pointers: gaugePointer,
+                          annotations: <GaugeAnnotation>[
+                            GaugeAnnotation(
+                              widget: Text(
+                                widget.bmiValue.toStringAsFixed(1),
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              angle: 90,
+                              positionFactor: 0.7,
+                            )
+                          ],
                         ),
-                        angle: 90,
-                        positionFactor: 0.7,
-                      )
-                    ],
-                  ),
-                ],
-              ),
+                      ],
+                    ),
 
-              CustomText(
-                title: widget.bmiCategory,
-                color: widget.bmiCategoryColor,
-                fontSize: 25,
+                    CustomText(
+                      title: widget.bmiCategory,
+                      color: widget.bmiCategoryColor,
+                      fontSize: 25,
+                    ),
+                    CustomText(
+                      title: widget.bmiInterpretation,
+                      color: ColorManager.whiteColor,
+                      fontSize: 14,
+                    ),
+                    Spacer(),
+                    CustomText(
+                      title: 'Version: $appVersion',
+                      color: ColorManager.whiteColor,
+                      fontSize: 14,
+                    ),
+                    SizedBox(height: 20.h),
+                  ],
+                ),
               ),
-              CustomText(
-                title: widget.bmiInterpretation,
-                color: ColorManager.whiteColor,
-                fontSize: 14,
+            ),
+            Visibility(
+              visible: isAdLoaded && AdManager.bannerAd != null,
+              child: SizedBox(
+                height: AdManager.bannerAd!.size.height.toDouble(),
+                width: AdManager.bannerAd!.size.width.toDouble(),
+                child: AdWidget(ad: AdManager.bannerAd!),
               ),
-              Spacer(),
-              CustomText(
-                title: 'Version: $appVersion',
-                color: ColorManager.whiteColor,
-                fontSize: 14,
-              ),
-              SizedBox(height: 20.h),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -144,5 +169,11 @@ class _BMIResultScreenState extends State<BMIResultScreen> {
         endWidth: 20,
       ),
     ];
+  }
+
+  @override
+  void dispose() {
+    AdManager.disposeAdBanner();
+    super.dispose();
   }
 }
