@@ -26,11 +26,7 @@ class _BMIResultScreenState extends State<BMIResultScreen> {
   @override
   void initState() {
     super.initState();
-    AdManager.loadAdBanner((updateState) {
-      updateState(() {
-        isAdLoaded = true;
-      });
-    });
+    AdManager.loadAdBanner(setState(() {}));
   }
 
   @override
@@ -113,7 +109,7 @@ class _BMIResultScreenState extends State<BMIResultScreen> {
               ),
             ),
             Visibility(
-              visible: isAdLoaded && AdManager.bannerAd != null,
+              visible: AdManager.bannerAd != null,
               child: SizedBox(
                 height: AdManager.bannerAd!.size.height.toDouble(),
                 width: AdManager.bannerAd!.size.width.toDouble(),
