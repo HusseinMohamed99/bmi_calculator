@@ -19,4 +19,6 @@
             android:value="ca-app-pub-4479962845986675~1269946149"/>
   </application>
   <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+
 </manifest>
