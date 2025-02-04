@@ -25,7 +25,9 @@ class _BMIResultScreenState extends State<BMIResultScreen> {
   @override
   void initState() {
     super.initState();
-    AdManager.loadAdBanner(setState(() {}));
+    AdManager.loadAdBanner(() {
+      setState(() {});
+    });
   }
 
   @override

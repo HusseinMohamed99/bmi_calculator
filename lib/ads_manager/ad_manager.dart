@@ -10,17 +10,20 @@ class AdManager {
   static RewardedAd? rewardedAd;
   static bool isShowingAd = false;
 
-  static void loadAdBanner(void setState) {
+  static void loadAdBanner(void Function() setState) {
+    bannerAd?.dispose(); // Dispose of the previous banner
     bannerAd = BannerAd(
       size: AdSize.fullBanner,
-      adUnitId: AdUnit.homeBanner, // Ensure this is a valid ad unit ID
+      adUnitId: AdUnit.homeBanner,
       listener: BannerAdListener(
         onAdLoaded: (ad) {
-          setState;
+          log('Banner Ad Loaded');
+          setState();
         },
         onAdFailedToLoad: (ad, error) {
+          log('Banner Ad failed to load: $error');
           ad.dispose();
-          log('Ad failed to load: $error');
+          bannerAd = null;
         },
       ),
       request: const AdRequest(),
@@ -28,75 +31,125 @@ class AdManager {
   }
 
   static void loadAdOpen() {
+    appOpenAd?.dispose(); // Dispose of previous instance
+    appOpenAd = null;
+
     AppOpenAd.load(
       adUnitId: AdUnit.addOpen,
       request: const AdRequest(),
       adLoadCallback: AppOpenAdLoadCallback(
         onAdFailedToLoad: (LoadAdError error) {
           log('App open ad failed to load: $error');
-          appOpenAd?.dispose();
+          appOpenAd = null;
         },
         onAdLoaded: (AppOpenAd ad) {
           appOpenAd = ad;
-          if (appOpenAd != null) {
-            appOpenAd!.show();
-          }
+
+          appOpenAd?.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              ad.dispose();
+              appOpenAd = null;
+              log('App Open Ad dismissed');
+              loadAdOpen();
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              ad.dispose();
+              appOpenAd = null;
+              log('App Open Ad failed to show: $error');
+              loadAdOpen();
+            },
+          );
+
+          appOpenAd?.show(); // Safe null check before showing
         },
       ),
-    );
-    appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
-      onAdDismissedFullScreenContent: (ad) {
-        ad.dispose();
-        loadAdOpen();
-      },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        ad.dispose();
-        loadAdOpen();
-      },
     );
   }
 
   static void loadInterstitialAd() {
+    interstitialAd?.dispose();
+    interstitialAd = null;
+
     InterstitialAd.load(
       adUnitId: AdUnit.interstitialAd,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdFailedToLoad: (LoadAdError error) {
           log('Interstitial ad failed to load: $error');
-          interstitialAd?.dispose();
+          interstitialAd = null;
         },
         onAdLoaded: (InterstitialAd ad) {
           interstitialAd = ad;
-          if (interstitialAd != null) {
-            interstitialAd!.show();
-          }
+
+          interstitialAd?.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              ad.dispose();
+              interstitialAd = null;
+              log('Interstitial ad dismissed');
+              loadInterstitialAd();
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              ad.dispose();
+              interstitialAd = null;
+              log('Interstitial ad failed to show: $error');
+              loadInterstitialAd();
+            },
+          );
         },
       ),
     );
   }
 
-  static void loadRewardedAd(void setState) {
+  static void loadRewardedAd(void Function() setState) {
+    rewardedAd?.dispose();
+    rewardedAd = null;
+
     RewardedAd.load(
-        adUnitId: AdUnit.rewardedAd,
-        request: const AdRequest(),
-        rewardedAdLoadCallback: RewardedAdLoadCallback(onAdLoaded: (ad) {
+      adUnitId: AdUnit.rewardedAd,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (RewardedAd ad) {
+          log('Rewarded ad loaded');
           rewardedAd = ad;
-          if (rewardedAd != null) {
-            rewardedAd!.show(
-              onUserEarnedReward: (ad, reward) {
-                bannerAd?.dispose();
-                bannerAd = null;
-                interstitialAd?.dispose();
-                interstitialAd = null;
-                isShowingAd = true;
-                setState;
-              },
-            );
-          }
-        }, onAdFailedToLoad: (LoadAdError error) {
-          rewardedAd?.dispose();
+
+          rewardedAd?.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              ad.dispose();
+              rewardedAd = null;
+              log('Rewarded ad dismissed');
+              isShowingAd = false;
+              setState();
+              loadRewardedAd(setState);
+            },
+            onAdFailedToShowFullScreenContent: (ad, error) {
+              ad.dispose();
+              rewardedAd = null;
+              log('Rewarded ad failed to show: $error');
+              loadRewardedAd(setState);
+            },
+          );
+        },
+        onAdFailedToLoad: (LoadAdError error) {
           log('Rewarded ad failed to load: $error');
-        }));
+          rewardedAd = null;
+        },
+      ),
+    );
+  }
+
+  static void showRewardedAd(void Function() setState) {
+    if (rewardedAd != null) {
+      rewardedAd!.show(
+        onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+          log('User earned reward: ${reward.amount} ${reward.type}');
+          isShowingAd = true;
+          setState();
+        },
+      );
+    } else {
+      log('No rewarded ad available, loading a new one...');
+      loadRewardedAd(setState);
+    }
   }
 
   static void disposeAdBanner() {

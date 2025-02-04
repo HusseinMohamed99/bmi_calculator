@@ -14,7 +14,12 @@ class _BmiScreenState extends State<BmiScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       checkForUpdate(context);
     });
-    AdManager.loadAdBanner(setState(() {}));
+    AdManager.loadAdBanner(() {
+      setState(() {});
+    });
+    AdManager.loadRewardedAd(() {
+      setState(() {}); // Update UI if necessary
+    });
   }
 
   @override
@@ -52,9 +57,15 @@ class _BmiScreenState extends State<BmiScreen> {
                 child: CustomAgeAndWeightWidget(bmiCubit: bmiCubit),
               ),
               CustomButtonCalculatorWidget(onPressed: () {
-                AdManager.isShowingAd
-                    ? AdManager.loadRewardedAd(setState(() {}))
-                    : null;
+                if (AdManager.rewardedAd != null) {
+                  AdManager.showRewardedAd(() {
+                    setState(() {}); // Update UI when user earns reward
+                  });
+                } else {
+                  AdManager.loadRewardedAd(() {
+                    setState(() {}); // Try loading again if ad is not ready
+                  });
+                }
                 bmiCubit.calculateBMI();
                 Navigator.push(
                   context,
